@@ -18,7 +18,7 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CadastrarDespesaAsync([FromBody] Despesa despesa)
+        public async Task<IActionResult> CreateDespesaAsync([FromBody] Despesa despesa)
         {
             if (await _context.Despesas.AnyAsync(x => 
                 x.Descricao == despesa.Descricao &&
@@ -35,25 +35,25 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ListarAsync()
+        public async Task<IActionResult> GetDespesasAsync()
         {
             var despesas = await _context.Despesas.ToListAsync();
             return Ok(despesas);
         }
         
         [HttpGet("{id}")]
-        public async Task<IActionResult> ProcurarPorIdAsync([FromRoute]int id)
+        public async Task<IActionResult> GetDespesaByIdAsync([FromRoute]int id)
         {
             var despesa = await _context.Despesas.FindAsync(id);
 
             if (despesa is not null)
                 return Ok(despesa);
                 
-            return NotFound();
+            return NotFound(new {message = "Despesa informada não encontrada"});
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> AtualizarAsync([FromRoute]int id, [FromBody] Despesa att)
+        public async Task<IActionResult> UpdateDespesaAsync([FromRoute]int id, [FromBody] Despesa att)
         {
             if (id != att.Id) 
                 return BadRequest();
@@ -93,7 +93,7 @@ namespace challenge_backend_2.Controllers
                 throw e;
             }
             
-            return Ok();
+            return Ok(new {message = "Despesa excluída com sucesso!"});
         }
     }
 }

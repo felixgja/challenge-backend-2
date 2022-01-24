@@ -17,7 +17,7 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CadastrarReceitaAsync([FromBody] Receita receita)
+        public async Task<IActionResult> CreateReceitaAsync([FromBody] Receita receita)
         {
             if (await _context.Receitas.AnyAsync(x => 
                 x.Descricao == receita.Descricao &&
@@ -45,7 +45,7 @@ namespace challenge_backend_2.Controllers
         {
             var receita = await _context.Receitas.FindAsync(id);
 
-            if (receita != null)
+            if (receita is not null)
                 return Ok(receita);
                 
             return NotFound(new{message = "Receita informada não encontrada"});
@@ -83,7 +83,14 @@ namespace challenge_backend_2.Controllers
                 return NotFound(new {message = "Receita não encontrada."});
 
             _context.Receitas.Remove(receita);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException e)
+            {
+                throw e;
+            }
             return Ok(new {message = "Receita excluída com sucesso!"});
         }
     }
