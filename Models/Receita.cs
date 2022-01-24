@@ -14,13 +14,5 @@ namespace challenge_backend_2.Models
         public double Valor { get; set; }
         [Required]
         public DateTime Data { get; set; }
-
-        public Receita(int id, string descricao, double valor, DateTime data)
-        {
-            Id = id;
-            Descricao = descricao;
-            Valor = valor;
-            Data = data;
-        }
     }
 }

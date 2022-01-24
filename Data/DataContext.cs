@@ -9,7 +9,7 @@ namespace challenge_backend_2.Data
         {
 
         }
-        public DbSet<Receita> Receitas {get;set;}
+        public DbSet<Receita> Receitas { get; set; }
         public DbSet<Despesa> Despesas { get; set; }
     }
 }
