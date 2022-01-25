@@ -1,8 +1,9 @@
+using AutoMapper;
 using challenge_backend_2.Data;
+using challenge_backend_2.DTOs.Despesa;
 using challenge_backend_2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 
 namespace challenge_backend_2.Controllers
 {
@@ -11,40 +12,43 @@ namespace challenge_backend_2.Controllers
     public class DespesasController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public DespesasController(DataContext dataContext)
+        public DespesasController(DataContext dataContext, IMapper mapper)
         {
             _context = dataContext;
+            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateDespesaAsync([FromBody] Despesa despesa)
+        public async Task<ActionResult<CreateDespesaDto>> CreateDespesaAsync([FromBody] CreateDespesaDto despesaDto)
         {
             if (await _context.Despesas.AnyAsync(x => 
-                x.Descricao == despesa.Descricao &&
-                x.Data.Month == despesa.Data.Month))
+                x.Descricao == despesaDto.Descricao &&
+                x.Data.Month == despesaDto.Data.Month))
             {
-                return Ok(new {message = $"Já exister uma despesa com descrição '{despesa.Descricao}' para o mês {despesa.Data.Month}"});
+                return Ok(new {message = $"Já existe uma despesa com descrição '{despesaDto.Descricao}' para o mês {despesaDto.Data.Month}"});
             }
             else
             {
-            _context.Despesas.Add(despesa);
-            await _context.SaveChangesAsync();
-            return Ok(despesa);
+                _context.Despesas.Add(_mapper.Map<Despesa>(despesaDto));
+                await _context.SaveChangesAsync();
+                return Ok(despesaDto);
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetDespesasAsync()
+        public async Task<ActionResult<IEnumerable<ReadDespesaDto>>> GetDespesasAsync()
         {
             var despesas = await _context.Despesas.ToListAsync();
+
             return Ok(despesas);
         }
         
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetDespesaByIdAsync([FromRoute]int id)
+        public async Task<ActionResult<ReadDespesaDto>> GetDespesaByIdAsync([FromRoute]int id)
         {
-            var despesa = await _context.Despesas.FindAsync(id);
+            var despesa = _mapper.Map<ReadDespesaDto>(await _context.Despesas.FindAsync(id));
 
             if (despesa is not null)
                 return Ok(despesa);
@@ -53,26 +57,24 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDespesaAsync([FromRoute]int id, [FromBody] Despesa att)
+        public async Task<ActionResult<UpdateDespesaDto>> UpdateDespesaAsync([FromRoute]int id, [FromBody] UpdateDespesaDto despesaDto)
         {
-            if (id != att.Id) 
-                return BadRequest();
+            var despesa = await _context.Despesas.FindAsync(id);
 
-            _context.Entry(att).State = EntityState.Modified;
+            if(await _context.Despesas.AnyAsync(x => x.Id == id) is false)
+                    return NotFound(new {message = "Despesa não encontrada"});
             
+            _mapper.Map(despesaDto, despesa);
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException e)
             {
-                if(await _context.Despesas.AnyAsync(x => x.Id == id) is false)
-                    return NotFound(new {message = "Despesa não encontrada"});
-                else
-                    throw e;
+                throw e;
             }
 
-            return Ok(att);
+            return Ok(despesaDto);
         }
 
         [HttpDelete("{id}")]

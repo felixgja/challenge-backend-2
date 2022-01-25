@@ -18,6 +18,8 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseMySql(connection, serverVersion);
 });
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

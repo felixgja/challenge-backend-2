@@ -1,4 +1,6 @@
+using AutoMapper;
 using challenge_backend_2.Data;
+using challenge_backend_2.DTOs.Receita;
 using challenge_backend_2.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,40 +12,42 @@ namespace challenge_backend_2.Controllers
     public class ReceitasController : ControllerBase
     {
         private readonly DataContext _context;
+        private readonly IMapper _mapper;
 
-        public ReceitasController(DataContext dataContext)
+        public ReceitasController(DataContext dataContext, IMapper mapper)
         {
             _context = dataContext;
+            _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateReceitaAsync([FromBody] Receita receita)
+        public async Task<ActionResult<CreateReceitaDto>> CreateReceitaAsync([FromBody] CreateReceitaDto receitaDto)
         {
             if (await _context.Receitas.AnyAsync(x => 
-                x.Descricao == receita.Descricao &&
-                x.Data.Month == receita.Data.Month))
+                x.Descricao == receitaDto.Descricao &&
+                x.Data.Month == receitaDto.Data.Month))
             {
-                return Ok(new {message = $"Já existe uma receita com descrição '{receita.Descricao}' para o mês {receita.Data.Month}"});
+                return Ok(new {message = $"Já existe uma receitaDto com descrição '{receitaDto.Descricao}' para o mês {receitaDto.Data.Month}"});
             }
             else
             {
-            _context.Receitas.Add(receita);
-            await _context.SaveChangesAsync();
-            return Ok(receita);
+                _context.Receitas.Add(_mapper.Map<Receita>(receitaDto));
+                await _context.SaveChangesAsync();
+                return Ok(receitaDto);
             }
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetReceitasAsync()
+        public async Task<ActionResult<IEnumerable<ReadReceitaDto>>> GetReceitasAsync()
         {
-            var receitas = await _context.Receitas.ToListAsync();
+            var receitas = _mapper.Map<IEnumerable<ReadReceitaDto>>(await _context.Receitas.ToListAsync());
             return Ok(receitas);
         }
         
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetReceitaByIdAsync([FromRoute]int id)
+        public async Task<ActionResult<ReadReceitaDto>> GetReceitaByIdAsync([FromRoute]int id)
         {
-            var receita = await _context.Receitas.FindAsync(id);
+            var receita = _mapper.Map<ReadReceitaDto>(await _context.Receitas.FindAsync(id));
 
             if (receita is not null)
                 return Ok(receita);
@@ -52,26 +56,25 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateReceitaAsync([FromRoute]int id, [FromBody] Receita att)
+        public async Task<ActionResult<UpdateReceitaDto>> UpdateReceitaAsync([FromRoute]int id, [FromBody] UpdateReceitaDto receitaDto)
         {
-            if (id != att.Id) 
-                return BadRequest();
+            var receita = await _context.Receitas.FindAsync(id);
+        
+            if(await _context.Despesas.AnyAsync(x => x.Id == id) is false)
+                return NotFound(new {message = "Receita não encontrada"});
 
-            _context.Entry(att).State = EntityState.Modified;
-            
+            _mapper.Map(receitaDto, receita);
+
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException e)
             {
-                if(await _context.Despesas.AnyAsync(x => x.Id == id) is false)
-                    return NotFound(new {message = "Receita não encontrada"});
-                else
-                    throw e;
+                throw e;
             }
 
-            return Ok(att);
+            return Ok(receitaDto);
         }
 
         [HttpDelete("{id}")]
