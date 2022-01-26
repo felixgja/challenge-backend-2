@@ -1,4 +1,6 @@
 using challenge_backend_2.Data;
+using challenge_backend_2.Interfaces;
+using challenge_backend_2.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +21,9 @@ builder.Services.AddDbContext<DataContext>(options =>
 });
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddScoped<IDespesaService, DespesaService>();
+builder.Services.AddScoped<IReceitaService, ReceitaService>();
 
 var app = builder.Build();
 

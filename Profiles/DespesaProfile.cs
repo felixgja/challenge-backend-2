@@ -8,9 +8,8 @@ namespace challenge_backend_2.Profiles
     {
         public DespesaProfile()
         {
-            CreateMap<CreateDespesaDto, Despesa>();
-            CreateMap<Despesa, ReadDespesaDto>();
-            CreateMap<UpdateDespesaDto, Despesa>();
+            CreateMap<CreateDespesaDto, Despesa>().ReverseMap();
+            CreateMap<Despesa, DespesaDto>();
         }
         
     }

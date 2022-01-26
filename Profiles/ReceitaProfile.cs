@@ -8,9 +8,8 @@ namespace challenge_backend_2.Profiles
     {
         public ReceitaProfile()
         {
-            CreateMap<CreateReceitaDto, Receita>();
-            CreateMap<Receita, ReadReceitaDto>();
-            CreateMap<UpdateReceitaDto, Receita>();
+            CreateMap<CreateReceitaDto, Receita>().ReverseMap();
+            CreateMap<Receita, ReceitaDto>();
         }
         
     }

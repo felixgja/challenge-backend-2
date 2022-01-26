@@ -1,9 +1,7 @@
 using AutoMapper;
-using challenge_backend_2.Data;
 using challenge_backend_2.DTOs.Despesa;
-using challenge_backend_2.Models;
+using challenge_backend_2.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace challenge_backend_2.Controllers
 {
@@ -11,44 +9,38 @@ namespace challenge_backend_2.Controllers
     [Route("api/[controller]")]
     public class DespesasController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly IDespesaService _service;
         private readonly IMapper _mapper;
 
-        public DespesasController(DataContext dataContext, IMapper mapper)
+        public DespesasController(IDespesaService service, IMapper mapper)
         {
-            _context = dataContext;
+            _service = service;
             _mapper = mapper;
         }
 
         [HttpPost]
         public async Task<ActionResult<CreateDespesaDto>> CreateDespesaAsync([FromBody] CreateDespesaDto despesaDto)
         {
-            if (await _context.Despesas.AnyAsync(x => 
-                x.Descricao == despesaDto.Descricao &&
-                x.Data.Month == despesaDto.Data.Month))
-            {
+            if (await _service.Verifica(despesaDto))
                 return Ok(new {message = $"Já existe uma despesa com descrição '{despesaDto.Descricao}' para o mês {despesaDto.Data.Month}"});
-            }
-            else
-            {
-                _context.Despesas.Add(_mapper.Map<Despesa>(despesaDto));
-                await _context.SaveChangesAsync();
-                return Ok(despesaDto);
-            }
+
+            var despesa = await _service.CreateDespesaAsync(despesaDto);
+
+            return Ok(despesa);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReadDespesaDto>>> GetDespesasAsync()
+        public async Task<ActionResult<IEnumerable<DespesaDto>>> GetDespesasAsync()
         {
-            var despesas = await _context.Despesas.ToListAsync();
+            var despesas = await _service.GetDespesasAsync();
 
             return Ok(despesas);
         }
         
         [HttpGet("{id}")]
-        public async Task<ActionResult<ReadDespesaDto>> GetDespesaByIdAsync([FromRoute]int id)
+        public async Task<ActionResult<DespesaDto>> GetDespesaByIdAsync([FromRoute]int id)
         {
-            var despesa = _mapper.Map<ReadDespesaDto>(await _context.Despesas.FindAsync(id));
+            var despesa = await _service.GetDespesaByIdAsync(id);
 
             if (despesa is not null)
                 return Ok(despesa);
@@ -57,45 +49,25 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<UpdateDespesaDto>> UpdateDespesaAsync([FromRoute]int id, [FromBody] UpdateDespesaDto despesaDto)
+        public async Task<ActionResult<CreateDespesaDto>> UpdateDespesaAsync([FromRoute]int id, [FromBody] CreateDespesaDto despesaDto)
         {
-            var despesa = await _context.Despesas.FindAsync(id);
+            var despesa = await _service.UpdateDespesaAsync(id, despesaDto);
 
-            if(await _context.Despesas.AnyAsync(x => x.Id == id) is false)
-                    return NotFound(new {message = "Despesa não encontrada"});
+            if(despesa is null)
+                return NotFound(new {message = "Despesa não encontrada"});
             
-            _mapper.Map(despesaDto, despesa);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                throw e;
-            }
-
             return Ok(despesaDto);
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletarAsync([FromRoute]int id)
+        public async Task<ActionResult> DeleteDespesaAsync([FromRoute]int id)
         {
-            var despesa = await _context.Despesas.FindAsync(id);
+            var despesa = await _service.DeleteDespesaAsync(id);
 
-            if (despesa is null) 
-                return NotFound(new {message = "Despesa não encontrada."});
+            if (despesa is true) 
+                return Ok(new {message = "Despesa excluída com sucesso!"});
             
-                _context.Despesas.Remove(despesa);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException e)
-            {
-                throw e;
-            }
-            
-            return Ok(new {message = "Despesa excluída com sucesso!"});
+            return NotFound(new {message = "Despesa não encontrada."});
         }
     }
 }

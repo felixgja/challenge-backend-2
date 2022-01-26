@@ -2,8 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace challenge_backend_2.DTOs.Receita
 {
-    public abstract class ReceitaDto
+    public class ReceitaDto
     {
+        [Required]
+        public int Id { get; set; }
         [Required]
         public string Descricao { get; set; }
         [Required]
