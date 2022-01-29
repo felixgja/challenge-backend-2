@@ -9,6 +9,12 @@ namespace challenge_backend_2.Data
         {
 
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(DataContext).Assembly);
+        }
         public DbSet<Receita> Receitas { get; set; }
         public DbSet<Despesa> Despesas { get; set; }
     }

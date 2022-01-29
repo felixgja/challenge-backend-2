@@ -20,9 +20,11 @@ namespace challenge_backend_2.Services
 
         public async Task<bool> Verifica(CreateReceitaDto receitaDto)
         {
-            if (await _context.Receitas.AnyAsync(x => x.Descricao == receitaDto.Descricao
+            var receita = await _context.Receitas.Where(x => x.Descricao == receitaDto.Descricao
                 && x.Data.Year == receitaDto.Data.Year
-                && x.Data.Month == receitaDto.Data.Month))
+                && x.Data.Month == receitaDto.Data.Month).SingleOrDefaultAsync();
+
+            if (receita is not null)
             {
                 return true;
             }
@@ -42,10 +44,22 @@ namespace challenge_backend_2.Services
             return receitaDto;
         }
 
-        public async Task<IEnumerable<ReceitaDto>> GetReceitasAsync()
+        public async Task<IEnumerable<ReceitaDto>> GetReceitasAsync(string? descricao)
         {
-            var receitas = await _context.Receitas.ToListAsync();
+            var receitas = new List<Receita>();
+            
+            if (string.IsNullOrEmpty(descricao))
+                receitas = await _context.Receitas.ToListAsync();
+            else
+                receitas = await _context.Receitas.Where(x => x.Descricao.Contains(descricao)).ToListAsync();
 
+        return _mapper.Map<IEnumerable<ReceitaDto>>(receitas);
+        }
+
+        public async Task<IEnumerable<ReceitaDto>> GetReceitasByDateAsync(int ano, int mes)
+        {
+            var receitas = await _context.Receitas.Where(x => x.Data.Year.Equals(ano) && x.Data.Month.Equals(mes)).ToListAsync();
+            
             return _mapper.Map<IEnumerable<ReceitaDto>>(receitas);
         }
 
@@ -97,5 +111,6 @@ namespace challenge_backend_2.Services
 
             return false;
         }
+
     }
 }

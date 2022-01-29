@@ -31,22 +31,30 @@ namespace challenge_backend_2.Services
 
         }
 
-        public async Task<CreateDespesaDto?> CreateDespesaAsync(CreateDespesaDto despesaDto)
+        public async Task<CreateDespesaDto> CreateDespesaAsync(CreateDespesaDto despesaDto)
         {
-            if (await Verifica(despesaDto))
-            {
-                return null;
-            }
             _context.Despesas.Add(_mapper.Map<Despesa>(despesaDto));
             await _context.SaveChangesAsync();
             return despesaDto;
         }
 
-        public async Task<IEnumerable<DespesaDto>> GetDespesasAsync()
+        public async Task<IEnumerable<DespesaDto>> GetDespesasAsync(string? descricao)
         {
-            var despesas = await _context.Despesas.ToListAsync();
+            var despesas = new List<Despesa>();
+
+            if (string.IsNullOrEmpty(descricao))
+                despesas = await _context.Despesas.ToListAsync();
+            else
+                despesas = await _context.Despesas.Where(x => x.Descricao.Contains(descricao)).ToListAsync();
 
             return _mapper.Map<IEnumerable<DespesaDto>>(despesas);
+        }
+
+        public async Task<IEnumerable<DespesaDto>> GetDespesasByDateAsync(int ano, int mes)
+        {
+            var receitas = await _context.Despesas.Where(x => x.Data.Year.Equals(ano) && x.Data.Month.Equals(mes)).ToListAsync();
+
+            return _mapper.Map<IEnumerable<DespesaDto>>(receitas);
         }
 
         public async Task<DespesaDto> GetDespesaByIdAsync(int id)

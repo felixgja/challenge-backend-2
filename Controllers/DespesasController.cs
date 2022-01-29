@@ -1,4 +1,3 @@
-using AutoMapper;
 using challenge_backend_2.DTOs.Despesa;
 using challenge_backend_2.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +9,10 @@ namespace challenge_backend_2.Controllers
     public class DespesasController : ControllerBase
     {
         private readonly IDespesaService _service;
-        private readonly IMapper _mapper;
 
-        public DespesasController(IDespesaService service, IMapper mapper)
+        public DespesasController(IDespesaService service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         [HttpPost]
@@ -30,13 +27,21 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DespesaDto>>> GetDespesasAsync()
+        public async Task<ActionResult<IEnumerable<DespesaDto>>> GetDespesasAsync([FromQuery]string? descricao)
         {
-            var despesas = await _service.GetDespesasAsync();
+            var despesas = await _service.GetDespesasAsync(descricao);
 
             return Ok(despesas);
         }
         
+        [HttpGet("{ano}/{mes}")]
+        public async Task<ActionResult<IEnumerable<DespesaDto>>> GetDespesasByDateAsync([FromRoute]int ano, [FromRoute]int mes)
+        {
+            var despesas = await _service.GetDespesasByDateAsync(ano, mes);
+
+            return Ok(despesas);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<DespesaDto>> GetDespesaByIdAsync([FromRoute]int id)
         {

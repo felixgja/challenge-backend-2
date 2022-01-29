@@ -1,19 +1,13 @@
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+using challenge_backend_2.Models.Enums;
 
 namespace challenge_backend_2.Models
 {
-    
-    [Table("Despesas")]
     public class Despesa
     {
-        [Key]
         public int Id { get; set; }
-        [Required]
         public string Descricao { get; set; }
-        [Required]
+        public CategoriaType Categoria { get; set; }
         public double Valor { get; set; }
-        [Required]
         public DateTime Data { get; set; }
     }
 }

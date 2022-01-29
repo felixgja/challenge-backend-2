@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using challenge_backend_2.Data;
 using challenge_backend_2.Interfaces;
 using challenge_backend_2.Services;
@@ -7,7 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(x =>
+{
+    x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -24,6 +28,7 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddScoped<IDespesaService, DespesaService>();
 builder.Services.AddScoped<IReceitaService, ReceitaService>();
+builder.Services.AddScoped<IResumoService, ResumoService>();    
 
 var app = builder.Build();
 

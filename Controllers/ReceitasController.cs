@@ -1,4 +1,3 @@
-using AutoMapper;
 using challenge_backend_2.DTOs.Receita;
 using challenge_backend_2.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -10,12 +9,10 @@ namespace challenge_backend_2.Controllers
     public class ReceitasController : ControllerBase
     {
         private readonly IReceitaService _service;
-        private readonly IMapper _mapper;
 
-        public ReceitasController(IReceitaService service, IMapper mapper)
+        public ReceitasController(IReceitaService service)
         {
             _service = service;
-            _mapper = mapper;
         }
 
         [HttpPost]
@@ -30,9 +27,17 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ReceitaDto>>> GetReceitasAsync()
+        public async Task<ActionResult<IEnumerable<ReceitaDto>>> GetReceitasAsync([FromQuery]string? descricao)
         {
-            var receitas = await _service.GetReceitasAsync();
+            var receitas = await _service.GetReceitasAsync(descricao);
+
+            return Ok(receitas);
+        }
+
+        [HttpGet("{ano}/{mes}")]
+        public async Task<ActionResult<IEnumerable<ReceitaDto>>> GetReceitasByDateAsync([FromRoute]int ano, [FromRoute]int mes)
+        {
+            var receitas = await _service.GetReceitasByDateAsync(ano, mes);
 
             return Ok(receitas);
         }
