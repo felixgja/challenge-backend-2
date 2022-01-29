@@ -1,3 +1,4 @@
+using challenge_backend_2.DTOs;
 using challenge_backend_2.DTOs.Despesa;
 using challenge_backend_2.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,18 +17,15 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<CreateDespesaDto>> CreateDespesaAsync([FromBody] CreateDespesaDto despesaDto)
+        public async Task<ActionResult<RespostaDto<CreateDespesaDto>>> CreateDespesaAsync([FromBody] CreateDespesaDto despesaDto)
         {
-            if (await _service.Verifica(despesaDto))
-                return Ok(new {message = $"Já existe uma despesa com descrição '{despesaDto.Descricao}' para o mês {despesaDto.Data.Month}"});
-
             var despesa = await _service.CreateDespesaAsync(despesaDto);
 
             return Ok(despesa);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<DespesaDto>>> GetDespesasAsync([FromQuery]string? descricao)
+        public async Task<ActionResult<RespostaDto<IEnumerable<DespesaDto>>>> GetDespesasAsync([FromQuery]string? descricao)
         {
             var despesas = await _service.GetDespesasAsync(descricao);
 
@@ -35,7 +33,7 @@ namespace challenge_backend_2.Controllers
         }
         
         [HttpGet("{ano}/{mes}")]
-        public async Task<ActionResult<IEnumerable<DespesaDto>>> GetDespesasByDateAsync([FromRoute]int ano, [FromRoute]int mes)
+        public async Task<ActionResult<RespostaDto<IEnumerable<DespesaDto>>>> GetDespesasByDateAsync([FromRoute]int ano, [FromRoute]int mes)
         {
             var despesas = await _service.GetDespesasByDateAsync(ano, mes);
 
@@ -43,36 +41,30 @@ namespace challenge_backend_2.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<DespesaDto>> GetDespesaByIdAsync([FromRoute]int id)
+        public async Task<ActionResult<RespostaDto<DespesaDto>>> GetDespesaByIdAsync([FromRoute]int id)
         {
             var despesa = await _service.GetDespesaByIdAsync(id);
 
-            if (despesa is not null)
-                return Ok(despesa);
-                
-            return NotFound(new {message = "Despesa informada não encontrada"});
+            return Ok(despesa);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CreateDespesaDto>> UpdateDespesaAsync([FromRoute]int id, [FromBody] CreateDespesaDto despesaDto)
+        public async Task<ActionResult<RespostaDto<CreateDespesaDto>>> UpdateDespesaAsync([FromRoute]int id, [FromBody] CreateDespesaDto despesaDto)
         {
             var despesa = await _service.UpdateDespesaAsync(id, despesaDto);
-
-            if(despesa is null)
-                return NotFound(new {message = "Despesa não encontrada"});
             
-            return Ok(despesaDto);
+            return Ok(despesa);
         }
 
         [HttpDelete("{id}")]
-        public async Task<ActionResult> DeleteDespesaAsync([FromRoute]int id)
+        public async Task<ActionResult<RespostaDto>> DeleteDespesaAsync([FromRoute]int id)
         {
             var despesa = await _service.DeleteDespesaAsync(id);
 
-            if (despesa is true) 
-                return Ok(new {message = "Despesa excluída com sucesso!"});
+            if (despesa.Sucess) 
+                return Ok(despesa);
             
-            return NotFound(new {message = "Despesa não encontrada."});
+            return NotFound(despesa);
         }
     }
 }
