@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/challenge-backend-2.csproj",
+                "${workspaceFolder}/src/ControleFinanceiro.Api/ControleFinanceiro.Api.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -19,7 +19,7 @@
             "type": "process",
             "args": [
                 "publish",
-                "${workspaceFolder}/challenge-backend-2.csproj",
+                "${workspaceFolder}/src/ControleFinanceiro.Api/ControleFinanceiro.Api.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],
@@ -33,7 +33,7 @@
                 "watch",
                 "run",
                 "--project",
-                "${workspaceFolder}/challenge-backend-2.csproj"
+                "${workspaceFolder}/src/ControleFinanceiro.Api/ControleFinanceiro.Api.csproj"
             ],
             "problemMatcher": "$msCompile"
         }
